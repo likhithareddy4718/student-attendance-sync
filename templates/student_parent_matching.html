@@ -1,0 +1,999 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student-Parent Matching</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #252b36;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 27px;
+        }
+
+        .subtitle {
+            color: #687386;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 22px;
+        }
+
+        .card h2 {
+            font-size: 19px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd3df;
+            border-radius: 8px;
+            padding: 28px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 15px auto;
+            max-width: 100%;
+        }
+
+        button {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            background: #64748b;
+        }
+
+        .secondary:hover {
+            background: #475569;
+        }
+
+        .review-button {
+            background: #15803d;
+            margin-top: 20px;
+        }
+
+        .review-button:hover {
+            background: #166534;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        th {
+            background: #f7f8fa;
+            font-size: 13px;
+            color: #566174;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .matched {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .warning {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .message {
+            margin-top: 15px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .success-message {
+            color: #166534;
+        }
+
+        .error-message {
+            color: #dc2626;
+        }
+
+        .info-message {
+            color: #475569;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #7b8493;
+        }
+
+        .summary {
+            color: #475569;
+            margin-bottom: 18px;
+        }
+
+        #previewCard {
+            display: none;
+        }
+
+        #reviewMatchesButton {
+            display: none;
+        }
+
+        .school-info {
+            margin-bottom: 18px;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ================================= -->
+
+    <div class="header">
+
+        <div>
+
+            <h1>Student-Parent Matching</h1>
+
+            <p class="subtitle">
+                Upload student and parent details and review their connections.
+            </p>
+
+        </div>
+
+        <button
+            class="secondary"
+            type="button"
+            onclick="window.location.href='/connections/'">
+
+            Back to Connections
+
+        </button>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- CSV UPLOAD SECTION -->
+    <!-- ================================= -->
+
+    <div class="card">
+
+        <h2>Upload Parent Contact CSV</h2>
+
+        <p class="subtitle">
+            Select a CSV file containing student IDs and parent contact details.
+        </p>
+
+        <div class="upload-area">
+
+            <form id="uploadForm">
+
+                <input
+                    type="file"
+                    id="csvFile"
+                    name="file"
+                    accept=".csv"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    id="uploadButton">
+
+                    Upload CSV
+
+                </button>
+
+            </form>
+
+            <div
+                id="uploadMessage"
+                class="message info-message"
+                role="status"
+                aria-live="polite">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- CSV PREVIEW SECTION -->
+    <!-- ================================= -->
+
+    <div class="card" id="previewCard">
+
+        <h2>Review Student-Parent Matches</h2>
+
+        <p
+            id="previewSummary"
+            class="summary">
+        </p>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Parent Name</th>
+                        <th>Phone Number</th>
+                        <th>Email Address</th>
+                        <th>Review Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="previewBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div
+            id="csvErrors"
+            class="message">
+        </div>
+
+
+        <!-- REVIEW MATCHES BUTTON -->
+
+        <button
+            type="button"
+            id="reviewMatchesButton"
+            class="review-button">
+
+            Review Matches
+
+        </button>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- EXISTING STUDENT-PARENT RECORDS -->
+    <!-- ================================= -->
+
+    <div class="card">
+
+        <h2>Student-Parent Records</h2>
+
+        <p class="school-info">
+            School ID: {{ school_id }}
+        </p>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Parent Name</th>
+                        <th>Phone Number</th>
+                        <th>Email Address</th>
+                        <th>Matching Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for record in student_parent_data %}
+
+                    <tr>
+
+                        <td>
+                            {{ record.id }}
+                        </td>
+
+                        <td>
+                            {{ record.student_name }}
+                        </td>
+
+                        <td>
+                            {{ record.parent_name or 'Not assigned' }}
+                        </td>
+
+                        <td>
+                            {{ record.phone or 'Not available' }}
+                        </td>
+
+                        <td>
+                            {{ record.email or 'Not available' }}
+                        </td>
+
+                        <td>
+
+                            {% if record.parent_id %}
+
+                                <span class="status matched">
+                                    Matched
+                                </span>
+
+                            {% else %}
+
+                                <span class="status">
+                                    Pending
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td colspan="6" class="empty">
+                            No student records found.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================= -->
+<!-- JAVASCRIPT -->
+<!-- ================================= -->
+
+<script>
+
+    // HTML elements
+
+    const uploadForm =
+        document.getElementById("uploadForm");
+
+    const fileInput =
+        document.getElementById("csvFile");
+
+    const uploadButton =
+        document.getElementById("uploadButton");
+
+    const uploadMessage =
+        document.getElementById("uploadMessage");
+
+    const previewCard =
+        document.getElementById("previewCard");
+
+    const previewBody =
+        document.getElementById("previewBody");
+
+    const previewSummary =
+        document.getElementById("previewSummary");
+
+    const csvErrors =
+        document.getElementById("csvErrors");
+
+    const reviewMatchesButton =
+        document.getElementById("reviewMatchesButton");
+
+
+    // Store uploaded CSV records
+
+    let uploadedCsvRows = [];
+
+
+    // Display messages safely
+
+    function showMessage(element, text, className) {
+
+        element.textContent = text;
+
+        element.className = "message " + className;
+
+    }
+
+
+    // Create table cells safely
+
+    function createCell(value) {
+
+        const cell = document.createElement("td");
+
+        cell.textContent =
+            value === null ||
+            value === undefined ||
+            value === ""
+                ? "Not provided"
+                : value;
+
+        return cell;
+
+    }
+
+
+    // =====================================
+    // CSV UPLOAD AND PREVIEW
+    // =====================================
+
+    uploadForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            // Check file selection
+
+            if (!fileInput.files.length) {
+
+                showMessage(
+                    uploadMessage,
+                    "Please select a CSV file.",
+                    "error-message"
+                );
+
+                return;
+
+            }
+
+
+            const selectedFile = fileInput.files[0];
+
+
+            // Check file extension
+
+            if (!selectedFile.name.toLowerCase().endsWith(".csv")) {
+
+                showMessage(
+                    uploadMessage,
+                    "Only CSV files are allowed.",
+                    "error-message"
+                );
+
+                return;
+
+            }
+
+
+            // Prepare form data
+
+            const formData = new FormData();
+
+            formData.append("file", selectedFile);
+
+
+            // Clear previous preview
+
+            uploadedCsvRows = [];
+
+            previewCard.style.display = "none";
+
+            previewBody.innerHTML = "";
+
+            previewSummary.textContent = "";
+
+            csvErrors.textContent = "";
+
+            reviewMatchesButton.style.display = "none";
+
+
+            // Show loading message
+
+            uploadButton.disabled = true;
+
+            uploadButton.textContent = "Uploading...";
+
+            showMessage(
+                uploadMessage,
+                "Processing CSV. Please wait...",
+                "info-message"
+            );
+
+
+            try {
+
+                // Send CSV to Flask backend
+
+                const response = await fetch(
+                    "/student-parent/upload-csv",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+
+                // Read response
+
+                const responseText = await response.text();
+
+                let result;
+
+                try {
+
+                    result = JSON.parse(responseText);
+
+                } catch (error) {
+
+                    throw new Error(
+                        "Invalid response from Flask server. Check the backend."
+                    );
+
+                }
+
+
+                // Handle backend errors
+
+                if (!response.ok) {
+
+                    const errorDetails =
+                        Array.isArray(result.errors)
+                            ? "\n" + result.errors.join("\n")
+                            : "";
+
+                    throw new Error(
+                        (result.error ||
+                         result.message ||
+                         "CSV upload failed")
+                        + errorDetails
+                    );
+
+                }
+
+
+                // Check preview data
+
+                if (!Array.isArray(result.preview)) {
+
+                    throw new Error(
+                        "Backend did not return preview data. "
+                        + "Check upload_csv() in Flask."
+                    );
+
+                }
+
+
+                // Store CSV data for Review Matches page
+
+                uploadedCsvRows = result.preview.map(function(record) {
+
+                    return {
+
+                        student_id: record.student_id,
+
+                        student_name:
+                            record.uploaded_student_name ||
+                            record.student_name,
+
+                        parent_name:
+                            record.parent_name || "",
+
+                        parent_email:
+                            record.parent_email || "",
+
+                        parent_phone:
+                            record.parent_phone || ""
+
+                    };
+
+                });
+
+
+                // Display success message
+
+                showMessage(
+                    uploadMessage,
+                    result.message ||
+                    "CSV processed successfully.",
+                    "success-message"
+                );
+
+
+                // Show preview section
+
+                previewCard.style.display = "block";
+
+
+                // Display number of valid records
+
+                previewSummary.textContent =
+                    (result.total_valid ?? result.preview.length)
+                    + " valid records found. "
+                    + "Review the details below.";
+
+
+                // Display preview records
+
+                if (result.preview.length === 0) {
+
+                    const row = document.createElement("tr");
+
+                    const cell = document.createElement("td");
+
+                    cell.colSpan = 6;
+
+                    cell.className = "empty";
+
+                    cell.textContent = "No valid records found.";
+
+                    row.appendChild(cell);
+
+                    previewBody.appendChild(row);
+
+                } else {
+
+                    result.preview.forEach(function(record) {
+
+                        const row = document.createElement("tr");
+
+
+                        // Student ID
+
+                        row.appendChild(
+                            createCell(record.student_id)
+                        );
+
+
+                        // Student name
+
+                        row.appendChild(
+                            createCell(record.student_name)
+                        );
+
+
+                        // Parent name
+
+                        row.appendChild(
+                            createCell(record.parent_name)
+                        );
+
+
+                        // Phone number
+
+                        row.appendChild(
+                            createCell(record.parent_phone)
+                        );
+
+
+                        // Email
+
+                        row.appendChild(
+                            createCell(record.parent_email)
+                        );
+
+
+                        // Review status
+
+                        const statusCell =
+                            document.createElement("td");
+
+                        const statusBadge =
+                            document.createElement("span");
+
+
+                        if (record.name_matches === true) {
+
+                            statusBadge.className =
+                                "status matched";
+
+                        } else {
+
+                            statusBadge.className =
+                                "status warning";
+
+                        }
+
+
+                        statusBadge.textContent =
+                            record.review_status ||
+                            "Ready for review";
+
+
+                        statusCell.appendChild(statusBadge);
+
+                        row.appendChild(statusCell);
+
+                        previewBody.appendChild(row);
+
+                    });
+
+                }
+
+
+                // Display validation errors
+
+                const errors = Array.isArray(result.errors)
+                    ? result.errors
+                    : [];
+
+
+                if (errors.length > 0) {
+
+                    showMessage(
+                        csvErrors,
+                        "Rows requiring correction:\n"
+                        + errors.join("\n"),
+                        "error-message"
+                    );
+
+                } else {
+
+                    showMessage(
+                        csvErrors,
+                        "No CSV errors found.",
+                        "success-message"
+                    );
+
+                }
+
+
+                // Show Review Matches button
+                // only when valid records exist
+
+                if (uploadedCsvRows.length > 0) {
+
+                    reviewMatchesButton.style.display =
+                        "inline-block";
+
+                }
+
+            } catch (error) {
+
+                showMessage(
+                    uploadMessage,
+                    error.message,
+                    "error-message"
+                );
+
+                console.error(
+                    "CSV Upload Error:",
+                    error
+                );
+
+            } finally {
+
+                uploadButton.disabled = false;
+
+                uploadButton.textContent = "Upload CSV";
+
+            }
+
+        }
+    );
+
+
+    // =====================================
+    // REVIEW MATCHES BUTTON
+    // =====================================
+
+    reviewMatchesButton.addEventListener(
+        "click",
+        async function() {
+
+            // Check uploaded data
+
+            if (!uploadedCsvRows.length) {
+
+                showMessage(
+                    csvErrors,
+                    "Please upload a valid CSV file first.",
+                    "error-message"
+                );
+
+                return;
+
+            }
+
+
+            reviewMatchesButton.disabled = true;
+
+            reviewMatchesButton.textContent =
+                "Opening Review Page...";
+
+
+            try {
+
+                // Send uploaded CSV data to review route
+
+                const response = await fetch(
+                    "/review-matches/view",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            csv_rows: uploadedCsvRows
+                        })
+
+                    }
+                );
+
+
+                // Read response
+
+                const responseText = await response.text();
+
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+
+                // Check whether review page was generated
+
+                if (!response.ok || !contentType.includes("text/html")) {
+
+                    let errorMessage =
+                        "Unable to open Review Matches page.";
+
+                    try {
+
+                        const result = JSON.parse(responseText);
+
+                        errorMessage =
+                            result.error || errorMessage;
+
+                    } catch (error) {
+
+                        if (response.redirected) {
+
+                            errorMessage =
+                                "Your login session may have expired. "
+                                + "Please log in again.";
+
+                        }
+
+                    }
+
+                    throw new Error(errorMessage);
+
+                }
+
+
+                // Replace current page with Review Matches page
+
+                document.open();
+
+                document.write(responseText);
+
+                document.close();
+
+
+            } catch (error) {
+
+                showMessage(
+                    csvErrors,
+                    error.message,
+                    "error-message"
+                );
+
+                console.error(
+                    "Review Matches Error:",
+                    error
+                );
+
+                reviewMatchesButton.disabled = false;
+
+                reviewMatchesButton.textContent =
+                    "Review Matches";
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>

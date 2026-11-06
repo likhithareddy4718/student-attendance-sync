@@ -1,6 +1,6 @@
-import streamlit as st
 
-from pages.login import show_login_page
+from flask import Blueprint, render_template, request, redirect, session, flash
+
 from services.auth_service import (
     find_administrator_by_email,
     log_login_attempt
@@ -8,34 +8,35 @@ from services.auth_service import (
 from utils.security import verify_password
 
 
+auth_bp = Blueprint("auth", __name__)
+
+
+@auth_bp.route("/login", methods=["GET", "POST"])
 def handle_login():
-    """
-    Handle the login flow: show the login page, check credentials,
-    and either log the admin in or show an error message.
-    """
 
-    # Show the login form
-    credentials = show_login_page()
+    # Display login page
+    if request.method == "GET":
+        if "admin_id" in session:
+            return redirect("/student-parent/matching")
 
-    # Stop if the form wasn't submitted
-    if credentials is None:
-        return
+        return render_template("login.html")
 
-    email = credentials["email"]
-    password = credentials["password"]
+    # Get submitted credentials
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "")
 
     # Validate email and password
     if not email or not password:
-        st.error("Please enter both email and password.")
-        return
+        flash("Please enter both email and password.", "error")
+        return redirect("/login")
 
-    # Look up administrator
+    # Find administrator
     admin = find_administrator_by_email(email)
 
     if admin is None:
-        st.error("Email or password is incorrect.")
         log_login_attempt(email, False, "Email not found")
-        return
+        flash("Email or password is incorrect.", "error")
+        return redirect("/login")
 
     # Verify password
     password_is_correct = verify_password(
@@ -44,18 +45,28 @@ def handle_login():
     )
 
     if not password_is_correct:
-        st.error("Email or password is incorrect.")
         log_login_attempt(email, False, "Incorrect password")
-        return
+        flash("Email or password is incorrect.", "error")
+        return redirect("/login")
 
     # Log successful login
     log_login_attempt(email, True, "Login successful")
 
-    # Store admin information
-    st.session_state.admin_id = admin["id"]
-    st.session_state.admin_email = admin["email"]
-    st.session_state.school_id = admin["school_id"]
-    st.session_state.is_logged_in = True
+    # Clear old session and store administrator information
+    session.clear()
+    session["admin_id"] = admin["id"]
+    session["admin_email"] = admin["email"]
+    session["school_id"] = admin["school_id"]
 
-    st.success("Login successful! Redirecting to dashboard...")
-    st.info("You are now logged in. The dashboard will load on the next page refresh.")
+    flash("Login successful!", "success")
+
+    return redirect("/student-parent/matching")
+
+
+@auth_bp.route("/logout")
+def logout():
+
+    session.clear()
+    flash("You have been logged out.", "success")
+
+    return redirect("/login")
