@@ -1,0 +1,7 @@
+student_id,student_name,parent_name,parent_phone,parent_email
+1,Test Student,Ramesh Kumar,0000000001,ramesh@example.com
+2,Rahul Sharma,Suresh Sharma,0000000002,suresh@example.com
+3,Priya Reddy,Lakshmi Reddy,0000000003,lakshmi@example.com
+4,Arjun Kumar,Ravi Kumar,0000000004,ravi@example.com
+5,Sneha Patel,Meena Patel,0000000005,meena@example.com
+6,Ananya Singh,Amit Singh,0000000006,amit@example.com
