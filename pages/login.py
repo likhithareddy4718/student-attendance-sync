@@ -3,113 +3,150 @@ import streamlit as st
 
 
 def show_login_page():
-    """Display the login page for school administrators.
+    """
+    Display the login page for school administrators.
     Returns the email and password entered by the user, or None if not submitted.
     """
 
-    st.markdown(
-        """
+    st.set_page_config(
+        page_title="Administrator Log In",
+        layout="centered"
+    )
+
+    # Custom page design
+    st.markdown("""
         <style>
+
+        /* Page background */
         .stApp {
-            background: linear-gradient(135deg, #eef2ff, #e0f7fa, #f3e8ff);
+            background-color: #f4f7fc;
         }
 
+        /* Center the login container */
         .block-container {
-            max-width: 560px;
-            padding-top: 2rem;
+            max-width: 650px;
+            padding-top: 4rem;
+            padding-bottom: 3rem;
+            margin: auto;
         }
 
-        .brand {
-            text-align: center;
-            font-size: 30px;
-            font-weight: 800;
-            color: #4338ca;
+        /* Login heading */
+        .stApp h1,
+        .stApp [data-testid="stHeading"] h1 {
+            color: #1e293b !important;
+            text-align: center !important;
+            font-size: 42px !important;
+            font-weight: 700 !important;
+            margin-bottom: 30px !important;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #64748b;
-            margin-bottom: 25px;
+        /* Login form card */
+        div[data-testid="stForm"] {
+            background-color: #ffffff !important;
+            padding: 30px !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
         }
 
-        .login-heading {
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: #1e293b;
+        /* Input labels */
+        div[data-testid="stTextInput"] label {
+            color: #1e293b !important;
+            font-weight: 600 !important;
+        }
+
+        /* Input fields */
+        div[data-testid="stTextInput"] input {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 7px !important;
+            min-height: 45px;
+        }
+
+        /* Placeholder text */
+        div[data-testid="stTextInput"] input::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+        }
+
+        /* Full-width Login button */
+        div[data-testid="stFormSubmitButton"] {
+            width: 100% !important;
         }
 
         div[data-testid="stFormSubmitButton"] button {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            color: white;
-            border-radius: 10px;
-            width: 100%;
-            height: 45px;
-            font-weight: bold;
+            width: 100% !important;
+            min-height: 45px !important;
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 7px !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
         }
+
+        div[data-testid="stFormSubmitButton"] button:hover {
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+        }
+
+        /* Forgot password link */
+        .stApp a {
+            color: #2563eb !important;
+            font-weight: 500;
+        }
+
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="brand">🎓 AttendSync</div>'
-        '<div class="subtitle">Student Attendance Sync Platform</div>',
-        unsafe_allow_html=True,
-    )
+    # Page heading
+    st.title("Log In")
 
-    with st.container(border=True):
+    # Login form
+    with st.form("login_form"):
 
-        st.markdown(
-            '<div class="login-heading">Welcome Back!</div>',
-            unsafe_allow_html=True,
+        # Email field
+        email = st.text_input(
+            label="Email",
+            placeholder="Enter your email address"
         )
 
-        st.caption("Sign in to your administrator account")
+        # Password field
+        password = st.text_input(
+            label="Password",
+            type="password",
+            placeholder="Enter your password"
+        )
 
-        with st.form("login_form", clear_on_submit=False):
+        # Full-width Login button
+        submitted = st.form_submit_button(
+            "Login",
+            use_container_width=True
+        )
 
-            email = st.text_input(
-                "Email Address",
-                placeholder="admin@school.com",
-                key="login_email",
-                disabled=False,
-            )
+    # Forgot password link
+    st.markdown("[Forgot password?](#)")
 
-            password = st.text_input(
-                "Password",
-                placeholder="Enter your password",
-                type="password",
-                key="login_password",
-                disabled=False,
-            )
+    # Return credentials
+    if submitted:
+        if not email or not password:
+            st.error("Please enter both email and password.")
+            return None
 
-            submitted = st.form_submit_button(
-                "Login →",
-                use_container_width=True,
-            )
-
-        if submitted:
-            if not email.strip() or not password:
-                st.error("Please enter both email and password.")
-                return None
-
-            return {
-                "email": email.strip(),
-                "password": password,
-            }
-
-        if st.button("Forgot password?", key="forgot_password"):
-            st.info("Password reset functionality will be added here.")
-
-    st.markdown(
-        """
-        <div style="text-align:center;color:#94a3b8;
-                    margin-top:25px;font-size:12px;">
-            Secure access for school administrators
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        return {
+            "email": email,
+            "password": password
+        }
 
     return None
+
+
+# Test the login page
+if __name__ == "__main__":
+
+    credentials = show_login_page()
+
+    if credentials:
+        st.write(f"Email entered: {credentials['email']}")
+        st.write("Password received (not shown for security)")

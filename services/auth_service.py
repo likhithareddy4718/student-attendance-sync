@@ -4,7 +4,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-
+from utils.security import verify_password
 
 # Load environment variables
 load_dotenv(override=True)
@@ -76,3 +76,24 @@ def log_login_attempt(email, success, details=None):
 
     finally:
         conn.close()
+def authenticate_administrator(email, password):
+    """
+    Authenticate an administrator using email and password.
+    """
+    admin = find_administrator_by_email(email)
+
+    if not admin:
+        log_login_attempt(email, False, "Email not found")
+        return None
+
+    if verify_password(password, admin["password_hash"]):
+        log_login_attempt(email, True, "Login successful")
+        return {
+            "id": admin["id"],
+            "username": admin["username"],
+            "email": admin["email"],
+            "school_id": admin["school_id"]
+        }
+
+    log_login_attempt(email, False, "Incorrect password")
+    return None

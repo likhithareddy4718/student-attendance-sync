@@ -12,6 +12,10 @@ class Config:
     """Application configuration settings."""
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    if SQLALCHEMY_DATABASE_URI:
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+            "postgresql://", "postgresql+psycopg2://", 1
+            )
 
     # Fallback if DATABASE_URL is not configured
     if not SQLALCHEMY_DATABASE_URI:
@@ -28,3 +32,9 @@ class Config:
 
     # Disable unnecessary modification tracking
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Flask secret key
+    SECRET_KEY = os.getenv(
+        "SECRET_KEY",
+        "dev-key-change-in-production"
+    )
