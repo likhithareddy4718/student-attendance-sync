@@ -4,226 +4,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Connections</title>
+    <title>School Connections - Student Attendance Sync</title>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            background: #f5f5f5;
             padding: 20px;
-            background-color: #f5f5f5;
         }
 
         .container {
             max-width: 900px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
+            margin: auto;
+            background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         h1 {
             color: #333;
-            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .section-intro {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
         }
 
         .section {
             margin-bottom: 40px;
         }
 
-        .section-title {
+        .section h2 {
             font-size: 18px;
-            font-weight: bold;
             color: #333;
-            margin-bottom: 15px;
             border-bottom: 2px solid #007bff;
             padding-bottom: 10px;
-        }
-
-        .button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
             margin-bottom: 20px;
         }
 
-        .button:hover {
-            background-color: #0056b3;
+        .add-button {
+            margin-bottom: 20px;
         }
 
-        .button-danger {
-            background-color: #dc3545;
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
-        .button-danger:hover {
-            background-color: #c82333;
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        .button-secondary {
-            background-color: #6c757d;
+        .btn-primary {
+            background: #007bff;
+            color: white;
         }
 
-        .button-secondary:hover {
-            background-color: #5a6268;
+        .btn-primary:hover {
+            background: #0056b3;
         }
 
-        .school-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
         }
 
-        .school-item {
-            background-color: #f9f9f9;
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-test {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .connections-list {
+            margin-bottom: 20px;
+        }
+
+        .connection-item {
+            background: #f9f9f9;
             border: 1px solid #ddd;
+            border-radius: 6px;
             padding: 15px;
             margin-bottom: 10px;
-            border-radius: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        .school-info {
+        .connection-info {
             flex: 1;
             min-width: 0;
         }
 
-        .school-name {
+        .connection-name {
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 16px;
         }
 
-        .school-endpoint {
-            font-size: 12px;
+        .connection-endpoint {
             color: #666;
-            margin-bottom: 5px;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+
+        .connection-detail {
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
             overflow-wrap: anywhere;
         }
 
-        .school-status {
-            font-size: 12px;
+        .connection-detail strong {
+            color: #333;
+        }
+
+        .masked-key {
+            font-family: monospace;
+            background-color: #e9ecef;
             padding: 4px 8px;
             border-radius: 3px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .connection-status {
             display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .status-connected {
-            background-color: #d4edda;
+            background: #d4edda;
             color: #155724;
         }
 
         .status-disconnected {
-            background-color: #f8d7da;
+            background: #f8d7da;
             color: #721c24;
         }
 
-        .school-actions {
+        .connection-actions {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 115px;
         }
 
-        .school-actions button {
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-
-        .school-actions form {
+        .connection-actions form {
+            width: 115px;
             margin: 0;
         }
 
-        .empty-message {
-            color: #666;
-            font-style: italic;
-            padding: 20px;
-            text-align: center;
-            background-color: #f9f9f9;
-            border-radius: 4px;
+        .connection-actions button {
+            width: 100%;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .form-group label {
+        label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
             color: #333;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .form-group input {
+        input[type="text"],
+        input[type="password"],
+        input[type="url"] {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
-            box-sizing: border-box;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
+        input:focus {
             outline: none;
             border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .form-actions {
+        .button-group {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .message {
-            padding: 12px;
+            padding: 12px 15px;
             border-radius: 4px;
-            margin-bottom: 15px;
+            margin-top: 15px;
+            font-size: 14px;
             display: none;
         }
 
         .message.success {
-            background-color: #d4edda;
+            display: block;
+            background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
-            display: block;
         }
 
         .message.error {
-            background-color: #f8d7da;
+            display: block;
+            background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
-            display: block;
         }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .brand {
-            font-weight: bold;
-            font-size: 18px;
-            color: #1e2c37;
-        }
-
-        .admin-label {
+        .no-connections {
             color: #666;
             font-size: 14px;
+            padding: 20px;
+            text-align: center;
+            background: #f9f9f9;
+            border-radius: 4px;
         }
 
         @media (max-width: 600px) {
@@ -231,237 +267,477 @@
                 padding: 20px;
             }
 
-            .school-item {
+            .connection-item {
                 flex-direction: column;
                 align-items: flex-start;
             }
 
-            .school-actions {
-                margin-top: 15px;
+            .connection-actions {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
 
-            .form-row {
-                grid-template-columns: 1fr;
+            .connection-actions form {
+                width: auto;
+                flex: 1;
             }
         }
-        .section {
-    margin-top: 30px;
-}
-
-.section-title {
-    margin-top: 20px;
-    margin-bottom: 18px;
-}
-
-.button {
-    display: inline-block;
-    margin-bottom: 15px;
-}
     </style>
 </head>
 
 <body>
 
-    <div class="topbar">
-        <div class="brand">School Connections</div>
-        <div class="admin-label">School Administrator</div>
-    </div>
+<div class="container">
 
-    <div class="container">
+    <h1>Connected School Systems</h1>
 
-        <h1>Connected School Systems</h1>
+    <p class="section-intro">
+        Manage API connections to your school's attendance systems.
+    </p>
 
-        <div class="section">
+    <!-- Saved Connections Section -->
+    <div class="section">
 
-            <a href="#add-school" class="button">
+        <div class="add-button">
+            <button type="button"
+                    class="btn-primary"
+                    onclick="scrollToForm()">
                 Add New Connection
-            </a>
+            </button>
+        </div>
 
-            <div class="section-title">
-                Connected Systems
-            </div>
+        <h2>Your Saved Connections</h2>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="message {{ category }}">
-                            {{ message }}
+        <div class="connections-list" id="connectionsList">
+
+            {% if saved_connections %}
+                {% for connection in saved_connections %}
+
+                    <div class="connection-item">
+
+                        <div class="connection-info">
+
+                            <div class="connection-name">
+                                {{ connection.school_name }}
+                            </div>
+
+                            <div class="connection-detail">
+                                <strong>API Address:</strong>
+                                {{ connection.api_endpoint or 'Not provided' }}
+                            </div>
+
+                            <div class="connection-detail">
+                                <strong>API Key:</strong>
+                                <span class="masked-key">••••••••••••••••</span>
+                            </div>
+
+                            {% if connection.api_token %}
+                                <div class="connection-detail">
+                                    <strong>API Token:</strong>
+                                    <span class="masked-key">••••••••••••••••</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="connection-detail">
+                                <strong>Saved on:</strong>
+                                {% if connection.created_at %}
+                                    {{ connection.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Date unavailable
+                                {% endif %}
+                            </div>
+
                         </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
 
-            {% if schools %}
+                        <div class="connection-actions">
 
-                <ul class="school-list">
+                            <button type="button"
+                                    class="btn-test test-saved-btn"
+                                    data-connection-id="{{ connection.id }}">
+                                Test Again
+                            </button>
 
-                    {% for school in schools %}
+                            <button type="button"
+                                    class="btn-danger delete-connection-btn"
+                                    data-connection-id="{{ connection.id }}">
+                                Remove
+                            </button>
 
-                        <li class="school-item">
+                        </div>
 
-                            <div class="school-info">
+                    </div>
 
-                                <div class="school-name">
-                                    {{ school.name }}
-                                </div>
-
-                                <div class="school-endpoint">
-                                    API: {{ school.api_endpoint }}
-                                </div>
-
-                                {% if school.is_connected %}
-
-                                    <span class="school-status status-connected">
-                                        Connected
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="school-status status-disconnected">
-                                        Disconnected
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                            <div class="school-actions">
-
-                                <form
-                                    action="{{ url_for('school.test_school', school_id=school.id) }}"
-                                    method="POST">
-
-                                    <button type="submit" class="button button-secondary">
-                                        Test
-                                    </button>
-
-                                </form>
-
-                                {% if school.is_connected %}
-
-                                    <form
-                                        action="{{ url_for('school.disable_school', school_id=school.id) }}"
-                                        method="POST">
-
-                                        <button type="submit" class="button button-secondary">
-                                            Disable
-                                        </button>
-
-                                    </form>
-
-                                {% else %}
-
-                                    <form
-                                        action="{{ url_for('school.enable_school', school_id=school.id) }}"
-                                        method="POST">
-
-                                        <button type="submit" class="button">
-                                            Enable
-                                        </button>
-
-                                    </form>
-
-                                {% endif %}
-
-                                <form
-                                    action="{{ url_for('school.remove_school', school_id=school.id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Are you sure you want to permanently remove this school connection?');">
-
-                                    <button type="submit" class="button button-danger">
-                                        Remove
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </li>
-
-                    {% endfor %}
-
-                </ul>
-
+                {% endfor %}
             {% else %}
 
-                <div class="empty-message">
-                    No school systems connected yet.
+                <div class="no-connections">
+                    No connections saved yet. Add one below to get started.
                 </div>
 
             {% endif %}
 
         </div>
 
-        <div class="section" id="add-school">
+    </div>
 
-            <div class="section-title">
-                Add School System
+
+    <!-- Add New Connection Form -->
+    <div class="section" id="add-school">
+
+        <h2>Add School System</h2>
+
+        <form id="connectionForm">
+
+            <div class="form-group">
+
+                <label for="school-name">School System Name</label>
+
+                <input
+                    type="text"
+                    id="school-name"
+                    name="school_name"
+                    placeholder="e.g., Lincoln High School"
+                    required>
+
             </div>
 
-            <form action="{{ url_for('school.add_school') }}" method="POST">
+            <div class="form-group">
 
-                <div class="form-group">
+                <label for="api-address">API Address</label>
 
-                    <label for="name">
-                        School System Name
-                    </label>
+                <input
+                    type="url"
+                    id="api-address"
+                    name="api_endpoint"
+                    placeholder="https://example.com/api"
+                    required>
 
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        placeholder="Enter school system name"
-                        required>
+            </div>
 
-                </div>
+            <div class="form-group">
 
-                <div class="form-group">
+                <label for="api-key">API Key</label>
 
-                    <label for="api_endpoint">
-                        API Address
-                    </label>
+                <input
+                    type="password"
+                    id="api-key"
+                    name="api_key"
+                    placeholder="Enter API key"
+                    autocomplete="new-password"
+                    required>
 
-                    <input
-                        type="url"
-                        id="api_endpoint"
-                        name="api_endpoint"
-                        placeholder="https://example.com/api"
-                        required>
+            </div>
 
-                </div>
+            <div class="form-group">
 
-                <div class="form-group">
+                <label for="api-token">API Token (optional)</label>
 
-                    <label for="api_key">
-                        API Key
-                    </label>
+                <input
+                    type="password"
+                    id="api-token"
+                    name="api_token"
+                    placeholder="Enter API token if required"
+                    autocomplete="new-password">
 
-                    <input
-                        type="password"
-                        id="api_key"
-                        name="api_key"
-                        placeholder="Enter API key"
-                        required>
+            </div>
 
-                </div>
+            <div class="button-group">
 
-                <div class="form-actions">
+                <button type="button"
+                        class="btn-test"
+                        id="testBtn">
+                    Test Connection
+                </button>
 
-                    <button type="submit" class="button">
-                        Save Connection
-                    </button>
+                <button type="submit"
+                        class="btn-primary"
+                        id="saveBtn">
+                    Save Connection
+                </button>
 
-                    <button type="reset" class="button button-secondary">
-                        Clear
-                    </button>
+                <button type="reset"
+                        class="btn-secondary">
+                    Clear
+                </button>
 
-                </div>
+            </div>
 
-            </form>
+            <div id="formMessage" class="message"></div>
 
-        </div>
+        </form>
 
     </div>
+
+</div>
+
+
+<script>
+
+    const connectionForm = document.getElementById('connectionForm');
+    const testBtn = document.getElementById('testBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const formMessage = document.getElementById('formMessage');
+
+
+    // Scroll to the add connection form
+    function scrollToForm() {
+        document.getElementById('add-school').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+
+    // Display success or error message
+    function showMessage(message, type) {
+        formMessage.textContent = message || 'Request completed.';
+        formMessage.className = 'message ' + type;
+    }
+
+
+    // Get form values
+    function getFormData() {
+        return {
+            school_name: document.getElementById('school-name').value.trim(),
+            api_endpoint: document.getElementById('api-address').value.trim(),
+            api_key: document.getElementById('api-key').value.trim(),
+            api_token: document.getElementById('api-token').value.trim()
+        };
+    }
+
+
+    // Test a new school API connection
+    testBtn.addEventListener('click', async function() {
+
+        const formData = getFormData();
+
+        if (!formData.api_endpoint || !formData.api_key) {
+            showMessage(
+                'Please enter both the API address and API key.',
+                'error'
+            );
+            return;
+        }
+
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+
+        try {
+
+            const response = await fetch('/connections/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            showMessage(
+                data.message || (
+                    data.success
+                        ? 'Connection successful!'
+                        : 'Connection failed.'
+                ),
+                data.success ? 'success' : 'error'
+            );
+
+        } catch (error) {
+
+            showMessage('Unable to test connection.', 'error');
+
+        } finally {
+
+            testBtn.disabled = false;
+            testBtn.textContent = 'Test Connection';
+
+        }
+
+    });
+
+
+    // Save a new school connection
+    connectionForm.addEventListener('submit', async function(event) {
+
+        event.preventDefault();
+
+        const formData = getFormData();
+
+        if (!formData.school_name ||
+            !formData.api_endpoint ||
+            !formData.api_key) {
+
+            showMessage('Please fill in all required fields.', 'error');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+
+            const response = await fetch('/connections/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+
+                showMessage(
+                    'Connection saved successfully!',
+                    'success'
+                );
+
+                connectionForm.reset();
+
+                setTimeout(function() {
+                    location.reload();
+                }, 1200);
+
+            } else {
+
+                showMessage(
+                    data.message || 'Failed to save connection.',
+                    'error'
+                );
+
+            }
+
+        } catch (error) {
+
+            showMessage('Unable to save connection.', 'error');
+
+        } finally {
+
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Connection';
+
+        }
+
+    });
+
+
+    // Test an already saved connection
+    async function testSavedConnection(connectionId) {
+
+        showMessage('Testing saved connection...', 'success');
+
+        try {
+
+            const response = await fetch(
+                '/connections/test-saved/' + connectionId,
+                {
+                    method: 'POST'
+                }
+            );
+
+            const data = await response.json();
+
+            showMessage(
+                data.message || (
+                    data.success
+                        ? 'Saved connection is working!'
+                        : 'Connection test failed.'
+                ),
+                data.success ? 'success' : 'error'
+            );
+
+        } catch (error) {
+
+            showMessage('Error testing saved connection.', 'error');
+
+        }
+
+    }
+
+
+    // Delete a saved connection
+    async function deleteConnection(connectionId) {
+
+        const confirmed = confirm(
+            'Are you sure you want to remove this connection?'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                '/connections/delete/' + connectionId,
+                {
+                    method: 'DELETE'
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+
+                showMessage('Connection removed successfully.', 'success');
+
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+
+            } else {
+
+                showMessage(
+                    data.message || 'Failed to remove connection.',
+                    'error'
+                );
+
+            }
+
+        } catch (error) {
+
+            showMessage('Error removing connection.', 'error');
+
+        }
+
+    }
+
+
+    // Handle Test Again buttons
+    document.querySelectorAll('.test-saved-btn').forEach(function(button) {
+
+        button.addEventListener('click', function() {
+
+            const connectionId = this.dataset.connectionId;
+            testSavedConnection(connectionId);
+
+        });
+
+    });
+
+
+    // Handle Remove buttons
+    document.querySelectorAll('.delete-connection-btn').forEach(function(button) {
+
+        button.addEventListener('click', function() {
+
+            const connectionId = this.dataset.connectionId;
+            deleteConnection(connectionId);
+
+        });
+
+    });
+
+
+    // Clear message when the form is reset
+    connectionForm.addEventListener('reset', function() {
+        formMessage.textContent = '';
+        formMessage.className = 'message';
+    });
+
+</script>
 
 </body>
 </html>

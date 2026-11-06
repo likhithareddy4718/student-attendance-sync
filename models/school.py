@@ -4,7 +4,21 @@ from services.auth_service import get_db_connection
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+class School(db.Model):
+    __tablename__ = 'schools'
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    api_endpoint = db.Column(db.String(255))
+    is_connected = db.Column(db.Boolean)
+class APICredentials(db.Model):
+    __tablename__ = 'api_credentials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+    api_key = db.Column(db.Text)
+    api_token = db.Column(db.Text)
+    created_at = db.Column(db.DateTime)
 
 def get_all_connected_schools():
     """Fetch only connected school systems."""
@@ -60,7 +74,7 @@ def add_school_connection(name, api_endpoint, api_key):
                 cursor.execute("""
                     INSERT INTO schools
                     (name, api_endpoint, is_connected)
-                    VALUES (%s, %s, TRUE)
+                    VALUES (%s, %s, FALSE)
                     RETURNING id
                 """, (name, api_endpoint))
 
