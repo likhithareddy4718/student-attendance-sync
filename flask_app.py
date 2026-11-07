@@ -4,6 +4,7 @@ from routes.flask_auth import flask_auth_bp
 from pages.review_matches import review_matches_bp
 from config import Config
 from models import db
+from routes.admin_routes import admin_routes_bp
 
 # Existing blueprints
 from routes.school_routes import school_bp
@@ -36,6 +37,7 @@ app.register_blueprint(flask_auth_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(student_parent_bp)
 app.register_blueprint(review_matches_bp)
+app.register_blueprint(admin_routes_bp)
 
 @app.route("/")
 def home():
