@@ -1,0 +1,657 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Review Matches</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f5f7fb;
+            color: #252b36;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            font-size: 27px;
+            margin: 0 0 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #687386;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 22px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 950px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid #e9edf2;
+            vertical-align: middle;
+        }
+
+        th {
+            color: #566174;
+            background: #f7f8fa;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            min-width: 200px;
+            padding: 10px;
+            border: 1px solid #cbd3df;
+            border-radius: 6px;
+            background: white;
+        }
+
+        select:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        button {
+            padding: 11px 20px;
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            background: #64748b;
+        }
+
+        .secondary:hover {
+            background: #475569;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .matched {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .unmatched {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .confidence {
+            font-weight: 600;
+        }
+
+        .message {
+            margin-top: 15px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .success-message {
+            color: #166534;
+        }
+
+        .error-message {
+            color: #b91c1c;
+        }
+
+        .note {
+            color: #687386;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #7b8493;
+        }
+
+        .action-area {
+            margin-top: 22px;
+        }
+
+        .summary {
+            margin-bottom: 15px;
+            color: #475569;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ================================= -->
+
+    <div class="header">
+
+        <div>
+
+            <h1>Review Matches</h1>
+
+            <p class="subtitle">
+                Review automatically suggested student-parent matches.
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="secondary"
+            onclick="window.location.href='/student-parent/matching'">
+
+            Back to Matching
+
+        </button>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- MATCH REVIEW SECTION -->
+    <!-- ================================= -->
+
+    <div class="card">
+
+        <h2>Match Review</h2>
+
+        <p class="subtitle">
+            School ID: {{ school_id }}
+        </p>
+
+        <p class="note">
+            Review each suggested parent. You can change the selection
+            before saving the confirmed student-parent relationships.
+        </p>
+
+
+        {% if not all_parents %}
+
+        <p class="note">
+            No existing parent records are linked to this school.
+            Parent records must be created and associated with this school
+            before they can be selected here.
+        </p>
+
+        {% endif %}
+
+
+        <div class="summary">
+
+            Total records: {{ matches|length }}
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name (CSV)</th>
+                        <th>Parent Name (CSV)</th>
+                        <th>Matched Parent (Database)</th>
+                        <th>Confidence</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for match in matches %}
+
+                    <tr
+                        class="match-row"
+                        data-student-id="{{ match.student_id or '' }}"
+                        data-student-name="{{ match.student_name|e }}"
+                        data-parent-name="{{ match.parent_name_from_csv|e }}">
+
+                        <!-- Student ID -->
+
+                        <td>
+                            {{ match.student_id or 'Not found' }}
+                        </td>
+
+
+                        <!-- Student Name -->
+
+                        <td>
+                            {{ match.student_name }}
+                        </td>
+
+
+                        <!-- Parent Name from CSV -->
+
+                        <td>
+                            {{ match.parent_name_from_csv }}
+                        </td>
+
+
+                        <!-- Existing Parent Dropdown -->
+
+                        <td>
+
+                            <select
+                                class="parent-select"
+                                {% if not match.student_id or not all_parents %}
+                                disabled
+                                {% endif %}>
+
+                                <option value="">
+                                    Select a parent
+                                </option>
+
+
+                                {% for parent in all_parents %}
+
+                                <option
+                                    value="{{ parent.id }}"
+                                    {% if parent.id == match.matched_parent_id %}
+                                    selected
+                                    {% endif %}>
+
+                                    {{ parent.name }}
+
+                                    {% if parent.email %}
+                                        - {{ parent.email }}
+                                    {% elif parent.phone %}
+                                        - {{ parent.phone }}
+                                    {% endif %}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </td>
+
+
+                        <!-- Confidence Score -->
+
+                        <td class="confidence">
+
+                            {{ match.confidence_score }}%
+
+                        </td>
+
+
+                        <!-- Matching Status -->
+
+                        <td>
+
+                            {% if match.status == 'matched' %}
+
+                                <span class="status matched">
+                                    Matched
+                                </span>
+
+                            {% elif match.status == 'no_student_found' %}
+
+                                <span class="status unmatched">
+                                    Student not found
+                                </span>
+
+                            {% else %}
+
+                                <span class="status unmatched">
+                                    No parent match
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td colspan="6" class="empty">
+                            No matching records available.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- SAVE MATCHES BUTTON -->
+        <!-- ================================= -->
+
+        <div class="action-area">
+
+            <button
+                type="button"
+                id="saveMatchesButton">
+
+                Save All Matches
+
+            </button>
+
+        </div>
+
+
+        <!-- RESULT MESSAGE -->
+
+        <div
+            id="resultMessage"
+            class="message"
+            role="status"
+            aria-live="polite">
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================= -->
+<!-- JAVASCRIPT -->
+<!-- ================================= -->
+
+<script>
+
+    const saveButton =
+        document.getElementById("saveMatchesButton");
+
+    const resultMessage =
+        document.getElementById("resultMessage");
+
+
+    // Display messages
+
+    function showMessage(message, className) {
+
+        resultMessage.textContent = message;
+
+        resultMessage.className =
+            "message " + className;
+
+    }
+
+
+    // =====================================
+    // SAVE ALL MATCHES
+    // =====================================
+
+    saveButton.addEventListener(
+        "click",
+        async function() {
+
+            const rows =
+                document.querySelectorAll(".match-row");
+
+            const correctedMatches = [];
+
+
+            // Read the selected parent for each student
+
+            rows.forEach(function(row) {
+
+                const studentId =
+                    row.dataset.studentId;
+
+                const studentName =
+                    row.dataset.studentName;
+
+                const parentName =
+                    row.dataset.parentName;
+
+                const parentSelect =
+                    row.querySelector(".parent-select");
+
+
+                // Skip unidentified students
+
+                if (!studentId) {
+                    return;
+                }
+
+
+                // Skip rows without a selected parent
+
+                if (!parentSelect || !parentSelect.value) {
+                    return;
+                }
+
+
+                correctedMatches.push({
+
+                    student_id: Number(studentId),
+
+                    parent_id: Number(parentSelect.value),
+
+                    student_name: studentName,
+
+                    parent_name: parentName
+
+                });
+
+            });
+
+
+            // Check selected records
+
+            if (correctedMatches.length === 0) {
+
+                showMessage(
+                    "Please select at least one parent before saving.",
+                    "error-message"
+                );
+
+                return;
+
+            }
+
+
+            // Disable button during saving
+
+            saveButton.disabled = true;
+
+            saveButton.textContent =
+                "Saving Matches...";
+
+            showMessage(
+                "Validating and saving selected matches...",
+                ""
+            );
+
+
+            try {
+
+                // Send corrected matches to Flask backend
+
+                const response = await fetch(
+                    "/review-matches/correct",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            corrected_matches: correctedMatches
+
+                        })
+
+                    }
+                );
+
+
+                // Parse backend response
+
+                const result = await response.json();
+
+
+                // Handle errors
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        "Unable to save matches."
+                    );
+
+                }
+
+
+                // Display success message
+
+                if (result.success === true) {
+
+                    showMessage(
+                        result.message ||
+                        "Matches saved successfully.",
+                        "success-message"
+                    );
+
+                } else {
+
+                    showMessage(
+                        result.message ||
+                        "Matches could not be saved.",
+                        "error-message"
+                    );
+
+                }
+
+
+            } catch (error) {
+
+                showMessage(
+                    error.message,
+                    "error-message"
+                );
+
+                console.error(
+                    "Save Matches Error:",
+                    error
+                );
+
+            } finally {
+
+                // Enable button again
+
+                saveButton.disabled = false;
+
+                saveButton.textContent =
+                    "Save All Matches";
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
