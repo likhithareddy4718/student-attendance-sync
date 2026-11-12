@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ddd;
+        }
+        .status {
+            font-weight: bold;
+            color: #168443;
+        }
+        a {
+            color: #087bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Student Attendance Dashboard</h1>
+    <p>Welcome, {{ school.name }}</p>
+
+    <div class="card">
+        <h2>System Status</h2>
+        <p class="status">{{ dashboard_data.system_status }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Last Sync</h2>
+        <p>
+            {{ dashboard_data.last_sync_time or 'Never' }}
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Next Scheduled Sync</h2>
+        <p>
+            {{ dashboard_data.next_sync_time or 'Not scheduled' }}
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Quick Links</h3>
+        <p><a href="{{ url_for('school.school_connections') }}">School Connections</a></p>
+        <p><a href="{{ url_for('student_parent.upload_csv') }}">Student Parent Matching</a></p>
+    </div>
+
+</div>
+</body>
+</html>
