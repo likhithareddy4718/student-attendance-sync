@@ -13,7 +13,7 @@ load_dotenv(override=False)
 def get_db_connection():
     """Connect to the PostgreSQL database."""
 
-    load_dotenv(override=True)
+    load_dotenv(override=False)
 
     database_url = os.getenv("DATABASE_URL")
 

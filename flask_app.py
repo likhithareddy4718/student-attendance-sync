@@ -5,7 +5,9 @@ from pages.review_matches import review_matches_bp
 from config import Config
 from models import db
 from routes.admin_routes import admin_routes_bp
-
+from flask import Flask, redirect, url_for, render_template
+from models import db, School
+from screens.dashboard import get_dashboard_data
 # Existing blueprints
 from routes.school_routes import school_bp
 from routes.connections import connections_bp
@@ -41,9 +43,28 @@ app.register_blueprint(admin_routes_bp)
 
 @app.route("/")
 def home():
-    return redirect(url_for("school.school_connections"))
+    return redirect(url_for("dashboard"))
 
 
+@app.route("/dashboard")
+def dashboard():
+    try:
+        school = School.query.first()
+
+        if not school:
+            return "No school connected. Please add a school first."
+
+        dashboard_data = get_dashboard_data(school.id)
+
+        return render_template(
+            "dashboard.html",
+            school=school,
+            dashboard_data=dashboard_data
+        )
+
+    except Exception as e:
+        print("DASHBOARD ERROR:", e)
+        return f"Unable to load dashboard: {e}", 500
 if __name__ == "__main__":
     app.run(
         host="127.0.0.1",
