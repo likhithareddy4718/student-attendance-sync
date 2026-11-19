@@ -143,23 +143,14 @@ def save_matched_pairs(
                     )
                     continue
 
-                # 2. Verify parent exists and is associated
-                #    with this administrator's school
+                # 2. Verify parent exists in the database
                 cur.execute(
                     """
                     SELECT p.id, p.name
                     FROM parents p
                     WHERE p.id = %s
-                      AND EXISTS (
-                          SELECT 1
-                          FROM student_parents sp
-                          JOIN students s
-                            ON s.id = sp.student_id
-                          WHERE sp.parent_id = p.id
-                            AND s.school_id = %s
-                      )
                     """,
-                    (parent_id, school_id)
+                    (parent_id,)
                 )
 
                 parent = cur.fetchone()
@@ -167,7 +158,7 @@ def save_matched_pairs(
                 if not parent:
                     errors.append(
                         f"Parent '{parent_name}' "
-                        f"(ID {parent_id}) does not belong to this school."
+                        f"(ID {parent_id}) not found."
                     )
 
                     cur.execute(

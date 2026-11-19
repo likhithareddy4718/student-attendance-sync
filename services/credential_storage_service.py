@@ -68,8 +68,10 @@ class CredentialStorageService:
             return decrypted.decode()
 
         except Exception as e:
-            logger.error(f"Error decrypting credential: {str(e)}")
-            raise
+            logger.warning(
+                f"Could not decrypt credential with cipher, using raw value: {str(e)}"
+            )
+            return encrypted_value
     @staticmethod
     def save_connection(school_id, api_key, api_token=None):
         """

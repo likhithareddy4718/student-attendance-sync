@@ -1,4 +1,6 @@
+from functools import wraps
 import bcrypt
+from flask import session, redirect, url_for, flash, request, jsonify
 
 
 def hash_password(plain_password):
@@ -25,3 +27,19 @@ def verify_password(plain_password, hashed_password):
     hashed_bytes = hashed_password.encode('utf-8')
 
     return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+
+def login_required(f):
+    """
+    Decorator ensuring an administrator is authenticated in session.
+    Redirects unauthenticated browser requests to /login and returns 401 for JSON/API.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "admin_id" not in session or not session.get("school_id"):
+            if request.is_json or request.path.startswith("/api/") or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return jsonify({"error": "Unauthorized. Please log in."}), 401
+            flash("Please log in to access this page.", "error")
+            return redirect(url_for("flask_auth.login"))
+        return f(*args, **kwargs)
+    return decorated_function

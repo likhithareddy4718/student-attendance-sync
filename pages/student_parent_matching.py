@@ -19,6 +19,8 @@ from flask import (
     current_app
 )
 
+from utils.security import login_required
+
 
 # Load environment variables
 load_dotenv()
@@ -53,6 +55,7 @@ def get_db_connection():
 # --------------------------------------------------
 
 @student_parent_bp.route("/matching", methods=["GET"])
+@login_required
 def matching_page():
 
     # Check administrator login
@@ -124,6 +127,7 @@ def matching_page():
 # --------------------------------------------------
 
 @student_parent_bp.route("/upload-csv", methods=["POST"])
+@login_required
 def upload_csv():
 
     # 1. Check administrator authentication
@@ -439,23 +443,43 @@ def upload_csv():
 
 
 # --------------------------------------------------
-# SAVE MATCHES - NEXT IMPLEMENTATION STEP
+# SAVE MATCHES
 # --------------------------------------------------
 
 @student_parent_bp.route("/save-matches", methods=["POST"])
+@login_required
 def save_matches():
 
     if "admin_id" not in session:
-
         return jsonify({
-            "error": "Not authorized"
+            "error": "Not authorized. Please log in again."
         }), 401
 
-    return jsonify({
+    school_id = session.get("school_id")
+    if not school_id:
+        return jsonify({
+            "error": "Administrator school ID is missing"
+        }), 400
 
-        "error": (
-            "Save functionality is not implemented yet. "
-            "Complete the review and approval feature next."
-        )
+    data = request.get_json(silent=True) or {}
+    matches = data.get("matches") or data.get("confirmed_pairs") or []
 
-    }), 501
+    if not isinstance(matches, list) or not matches:
+        return jsonify({
+            "error": "No matches provided"
+        }), 400
+
+    from services.match_saver import save_matched_pairs, MatchSaveError
+
+    try:
+        success, message, count = save_matched_pairs(matches, school_id)
+        return jsonify({
+            "success": success,
+            "message": message,
+            "count_saved": count
+        }), (200 if success else 400)
+
+    except MatchSaveError as exc:
+        return jsonify({"error": str(exc)}), 500
+    except Exception as exc:
+        return jsonify({"error": f"Failed to save matches: {str(exc)}"}), 500

@@ -21,6 +21,7 @@ from models.school import (
 )
 
 from services.auth_service import get_db_connection
+from utils.security import login_required
 
 
 school_bp = Blueprint("school", __name__)
@@ -51,8 +52,10 @@ def is_valid_api_endpoint(endpoint):
 
 # Display all school connections
 @school_bp.route("/school-connections")
+@login_required
 def school_connections():
 
+    schools = []
     try:
         schools = get_all_schools()
 
@@ -78,6 +81,7 @@ def school_connections():
 
 # Add a new school connection using form
 @school_bp.route("/add-school", methods=["POST"])
+@login_required
 def add_school():
 
     name = request.form.get("name", "").strip()
@@ -123,6 +127,7 @@ def add_school():
 
 # Test a new connection before saving using form
 @school_bp.route("/test-new-connection", methods=["POST"])
+@login_required
 def test_new_connection():
 
     api_endpoint = request.form.get("api_endpoint", "").strip()
@@ -175,6 +180,7 @@ def test_new_connection():
 
 # Disable a school connection
 @school_bp.route("/disable-school/<int:school_id>", methods=["POST"])
+@login_required
 def disable_school(school_id):
 
     try:
@@ -198,6 +204,7 @@ def disable_school(school_id):
 
 # Enable a school connection
 @school_bp.route("/enable-school/<int:school_id>", methods=["POST"])
+@login_required
 def enable_school(school_id):
 
     try:
@@ -221,6 +228,7 @@ def enable_school(school_id):
 
 # Remove a school connection
 @school_bp.route("/remove-school/<int:school_id>", methods=["POST"])
+@login_required
 def remove_school(school_id):
 
     try:
@@ -244,6 +252,7 @@ def remove_school(school_id):
 
 # Test an already saved school's API
 @school_bp.route("/test-school/<int:school_id>", methods=["POST"])
+@login_required
 def test_school(school_id):
 
     conn = None
@@ -343,6 +352,7 @@ def test_school(school_id):
 
 # API: Test a new school connection
 @school_bp.route("/api/test-connection", methods=["POST"])
+@login_required
 def api_test_connection():
 
     data = request.get_json(silent=True) or {}
@@ -399,6 +409,7 @@ def api_test_connection():
 
 # API: Save a new school connection
 @school_bp.route("/api/save-connection", methods=["POST"])
+@login_required
 def api_save_connection():
 
     data = request.get_json(silent=True) or {}
@@ -447,6 +458,7 @@ def api_save_connection():
 
 # API: Get all saved school connections
 @school_bp.route("/api/connections", methods=["GET"])
+@login_required
 def api_get_connections():
 
     try:

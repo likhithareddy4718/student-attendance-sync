@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from config.scheduler import SessionLocal
 from models.sync_schedule import SyncSchedule, SyncLog
@@ -21,10 +21,15 @@ def get_dashboard_data(school_id):
 
         next_sync_time = get_next_sync_time(school_id, db)
 
+        recent_syncs = db.query(SyncLog).filter(
+            SyncLog.school_id == school_id
+        ).order_by(SyncLog.timestamp.desc()).limit(5).all()
+
         dashboard_data = {
             'system_status': system_status,
             'last_sync_time': last_sync_time,
-            'next_sync_time': next_sync_time
+            'next_sync_time': next_sync_time,
+            'recent_syncs': recent_syncs
         }
 
         return dashboard_data
@@ -48,7 +53,7 @@ def get_next_sync_time(school_id, db):
 
         cron = croniter(
             sync_schedule.cron_expression,
-            datetime.utcnow()
+            datetime.now(timezone.utc).replace(tzinfo=None)
         )
 
         next_run = cron.get_next(datetime)

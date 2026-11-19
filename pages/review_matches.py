@@ -23,6 +23,7 @@ from services.student_parent_matcher import (
     find_best_parent_match,
     calculate_name_similarity
 )
+from utils.security import login_required
 
 load_dotenv()
 
@@ -50,30 +51,17 @@ def get_db_connection():
 # VIEW MATCHES
 # -----------------------------------------
 
-@review_matches_bp.route("/view", methods=["POST"])
+@review_matches_bp.route("", methods=["GET"])
+@review_matches_bp.route("/", methods=["GET"])
+@review_matches_bp.route("/view", methods=["GET", "POST"])
+@login_required
 def view_matches():
-
-    if "admin_id" not in session:
-        return redirect("/login")
 
     school_id = session.get("school_id")
 
     if not school_id:
         return jsonify({
             "error": "Administrator school ID is missing"
-        }), 400
-
-    data = request.get_json(silent=True) or {}
-    csv_rows = data.get("csv_rows", [])
-
-    if not isinstance(csv_rows, list) or not csv_rows:
-        return jsonify({
-            "error": "No CSV records provided"
-        }), 400
-
-    if len(csv_rows) > 1000:
-        return jsonify({
-            "error": "Maximum 1000 records are allowed"
         }), 400
 
     conn = None
@@ -96,23 +84,13 @@ def view_matches():
 
             existing_students = cur.fetchall()
 
-            # Fetch parents already linked to this school
+            # Fetch all existing parents from database
             cur.execute(
                 """
-                SELECT DISTINCT
-                    p.id,
-                    p.name,
-                    p.email,
-                    p.phone
-                FROM parents p
-                INNER JOIN student_parents sp
-                    ON p.id = sp.parent_id
-                INNER JOIN students s
-                    ON sp.student_id = s.id
-                WHERE s.school_id = %s
-                ORDER BY p.name
-                """,
-                (school_id,)
+                SELECT id, name, email, phone
+                FROM parents
+                ORDER BY name
+                """
             )
 
             existing_parents = cur.fetchall()
@@ -122,6 +100,66 @@ def view_matches():
             int(student["id"]): student
             for student in existing_students
         }
+
+        # If POST, parse provided CSV rows; if GET, generate review from current school records
+        data = request.get_json(silent=True) or {}
+        csv_rows = data.get("csv_rows", [])
+
+        if request.method == "GET" and not csv_rows:
+            # Query existing student-parent mappings for this school
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        s.id AS student_id,
+                        s.name AS student_name,
+                        p.id AS parent_id,
+                        p.name AS parent_name,
+                        p.email AS parent_email,
+                        p.phone AS parent_phone
+                    FROM students s
+                    LEFT JOIN student_parents sp ON s.id = sp.student_id
+                    LEFT JOIN parents p ON sp.parent_id = p.id
+                    WHERE s.school_id = %s
+                    ORDER BY s.name
+                    """,
+                    (school_id,)
+                )
+                existing_mappings = cur.fetchall()
+
+            matches = []
+            for row in existing_mappings:
+                has_parent = bool(row.get("parent_id"))
+                matches.append({
+                    "student_id": row["student_id"],
+                    "student_name": row["student_name"],
+                    "parent_name_from_csv": row["parent_name"] or "Not assigned",
+                    "parent_email_from_csv": row["parent_email"] or "",
+                    "parent_phone_from_csv": row["parent_phone"] or "",
+                    "matched_parent_id": row["parent_id"],
+                    "matched_parent_name": row["parent_name"] or "No match found",
+                    "matched_parent_email": row["parent_email"] or "",
+                    "matched_parent_phone": row["parent_phone"] or "",
+                    "confidence_score": 100.0 if has_parent else 0.0,
+                    "status": "matched" if has_parent else "no_parent_found"
+                })
+
+            return render_template(
+                "review_matches.html",
+                matches=matches,
+                all_parents=existing_parents,
+                school_id=school_id
+            )
+
+        if not isinstance(csv_rows, list) or not csv_rows:
+            return jsonify({
+                "error": "No CSV records provided"
+            }), 400
+
+        if len(csv_rows) > 1000:
+            return jsonify({
+                "error": "Maximum 1000 records are allowed"
+            }), 400
 
         matches = []
 
@@ -253,6 +291,7 @@ def view_matches():
 
 
 @review_matches_bp.route("/correct", methods=["POST"])
+@login_required
 def correct_matches():
     """
     Validate and save administrator-confirmed matches.

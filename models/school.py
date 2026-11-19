@@ -47,9 +47,22 @@ def get_all_schools():
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute("""
-                SELECT id, name, api_endpoint, is_connected
-                FROM schools
-                ORDER BY id
+                SELECT
+                    s.id,
+                    s.name,
+                    s.api_endpoint,
+                    s.is_connected,
+                    c.created_at,
+                    CASE WHEN c.api_token IS NOT NULL AND c.api_token != '' THEN TRUE ELSE FALSE END as api_token
+                FROM schools s
+                LEFT JOIN LATERAL (
+                    SELECT created_at, api_token
+                    FROM api_credentials
+                    WHERE school_id = s.id
+                    ORDER BY id DESC
+                    LIMIT 1
+                ) c ON TRUE
+                ORDER BY s.id
             """)
             schools = cursor.fetchall()
             print("Database records fetched:", len(schools))
@@ -64,6 +77,9 @@ def add_school_connection(name, api_endpoint, api_key):
 
     if not name or not api_endpoint or not api_key:
         raise ValueError("All fields are required.")
+
+    from services.credential_storage_service import CredentialStorageService
+    encrypted_key = CredentialStorageService.encrypt_credential(api_key)
 
     conn = get_db_connection()
 
@@ -84,7 +100,7 @@ def add_school_connection(name, api_endpoint, api_key):
                     INSERT INTO api_credentials
                     (school_id, api_key, api_token, created_at)
                     VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
-                """, (school_id, api_key, None))
+                """, (school_id, encrypted_key, None))
 
                 return school_id
 

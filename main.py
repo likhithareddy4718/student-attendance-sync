@@ -4,6 +4,7 @@ from flask_app import app
 from config.scheduler import (
     SessionLocal,
     add_sync_job,
+    is_valid_cron,
     start_scheduler,
     stop_scheduler
 )
@@ -30,18 +31,35 @@ def register_sync_jobs():
 
         for schedule in schedules:
             school_id = schedule.school_id
+            cron_expr = schedule.cron_expression or "0 8 * * *"
 
-            add_sync_job(
-                job_id=f"attendance_sync_school_{school_id}",
-                job_func=lambda school_id=school_id:
-                    sync_attendance_for_school(school_id),
-                schedule_time=schedule.cron_expression
-            )
+            if not is_valid_cron(cron_expr):
+                logger.warning(
+                    "Skipping invalid cron '%s' for school %s",
+                    cron_expr,
+                    school_id
+                )
+                continue
 
-            logger.info(
-                "Sync job registered for school %s",
-                school_id
-            )
+            try:
+                add_sync_job(
+                    job_id=f"attendance_sync_school_{school_id}",
+                    job_func=lambda school_id=school_id:
+                        sync_attendance_for_school(school_id),
+                    schedule_time=cron_expr
+                )
+
+                logger.info(
+                    "Sync job registered for school %s (%s)",
+                    school_id,
+                    cron_expr
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to register sync job for school %s: %s",
+                    school_id,
+                    e
+                )
 
     finally:
         db.close()

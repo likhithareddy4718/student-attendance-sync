@@ -7,6 +7,7 @@ import logging
 from models import db, Schools, APICredentials
 from services.api_connection_service import APIConnectionService
 from services.credential_storage_service import CredentialStorageService
+from utils.security import login_required
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ connections_bp = Blueprint(
 
 # Display saved school connections
 @connections_bp.route('/', methods=['GET'])
+@login_required
 def show_connections():
     try:
         saved_connections = []
@@ -32,19 +34,22 @@ def show_connections():
 
             # Display only whether credentials exist.
             # Never send the actual secrets to the template.
-            if credentials and credentials.api_key:
-                saved_connections.append(
-                    SimpleNamespace(
-                        id=school.id,
-                        school_name=school.name,
-                        api_endpoint=school.api_endpoint,
-                        api_token=bool(credentials.api_token),
-                        created_at=credentials.created_at
-                    )
+            has_credentials = bool(credentials and credentials.api_key)
+            saved_connections.append(
+                SimpleNamespace(
+                    id=school.id,
+                    name=school.name,
+                    school_name=school.name,
+                    api_endpoint=school.api_endpoint,
+                    api_token=bool(credentials.api_token) if credentials else False,
+                    has_credentials=has_credentials,
+                    created_at=credentials.created_at if credentials else None
                 )
+            )
 
         return render_template(
             'school_connections.html',
+            schools=saved_connections,
             saved_connections=saved_connections
         )
 
@@ -55,6 +60,7 @@ def show_connections():
 
 # Test a new connection
 @connections_bp.route('/test', methods=['POST'])
+@login_required
 def test_connection():
     try:
         data = request.get_json(silent=True) or {}
@@ -88,6 +94,7 @@ def test_connection():
 
 # Save a new connection
 @connections_bp.route('/save', methods=['POST'])
+@login_required
 def save_connection():
     try:
         data = request.get_json(silent=True) or {}
@@ -172,6 +179,7 @@ def save_connection():
 
 # Test an already saved connection
 @connections_bp.route('/test-saved/<int:connection_id>', methods=['POST'])
+@login_required
 def test_saved_connection(connection_id):
     try:
         school = db.session.get(Schools, connection_id)
@@ -210,6 +218,7 @@ def test_saved_connection(connection_id):
 
 # Delete a saved connection
 @connections_bp.route('/delete/<int:connection_id>', methods=['DELETE'])
+@login_required
 def delete_connection(connection_id):
     try:
         school = db.session.get(Schools, connection_id)

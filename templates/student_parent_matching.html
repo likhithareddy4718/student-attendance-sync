@@ -200,6 +200,51 @@
             font-size: 14px;
         }
 
+        .main-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            border: 1px solid #e5e9f0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .main-nav .nav-brand {
+            font-weight: bold;
+            font-size: 16px;
+            color: #252b36;
+        }
+
+        .main-nav .nav-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .main-nav .nav-link {
+            color: #475569;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 4px;
+        }
+
+        .main-nav .nav-link:hover, .main-nav .nav-link.active {
+            color: #2563eb;
+            background: #eef5ff;
+        }
+
+        .main-nav .logout-link {
+            color: #dc2626 !important;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 15px;
@@ -220,6 +265,18 @@
 <body>
 
 <div class="container">
+
+    <nav class="main-nav">
+        <div class="nav-brand">Student Attendance Platform</div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+            <a href="{{ url_for('school.school_connections') }}" class="nav-link">School Connections</a>
+            <a href="{{ url_for('student_parent.matching_page') }}" class="nav-link active">Student-Parent Matching</a>
+            <a href="{{ url_for('review_matches.view_matches') }}" class="nav-link">Review Matches</a>
+            <a href="{{ url_for('admin_routes.sync_activity_log') }}" class="nav-link">Sync Activity Log</a>
+            <a href="{{ url_for('flask_auth.logout') }}" class="nav-link logout-link">Logout</a>
+        </div>
+    </nav>
 
     <!-- ================================= -->
     <!-- PAGE HEADER -->

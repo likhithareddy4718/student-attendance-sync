@@ -13,8 +13,13 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     if SQLALCHEMY_DATABASE_URI:
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
-            "postgresql://", "postgresql+psycopg2://", 1
+        if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+            SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+                "postgres://", "postgresql+psycopg2://", 1
+            )
+        elif SQLALCHEMY_DATABASE_URI.startswith("postgresql://"):
+            SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+                "postgresql://", "postgresql+psycopg2://", 1
             )
 
     # Fallback if DATABASE_URL is not configured
@@ -33,8 +38,19 @@ class Config:
     # Disable unnecessary modification tracking
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Database connection pooling for remote cloud PostgreSQL
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
     # Flask secret key
     SECRET_KEY = os.getenv(
         "SECRET_KEY",
         "dev-key-change-in-production"
     )
+
+    # Session Cookie Security
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.getenv("RENDER") is not None

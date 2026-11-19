@@ -24,6 +24,9 @@ if not DATABASE_URL:
 
 
 # Explicitly use the existing psycopg2 driver.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 database_url = make_url(DATABASE_URL)
 
 if database_url.drivername in ("postgresql", "postgres"):
@@ -31,11 +34,15 @@ if database_url.drivername in ("postgresql", "postgres"):
         drivername="postgresql+psycopg2"
     )
 
+connect_args = {}
+if database_url.host not in ("localhost", "127.0.0.1", "::1", None):
+    connect_args["sslmode"] = "require"
 
 # Create database engine.
 engine = create_engine(
     database_url,
-    pool_pre_ping=True
+    pool_pre_ping=True,
+    connect_args=connect_args
 )
 
 

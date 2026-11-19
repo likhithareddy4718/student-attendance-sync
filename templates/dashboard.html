@@ -16,6 +16,44 @@
             max-width: 1000px;
             margin: auto;
         }
+        .main-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .main-nav .nav-brand {
+            font-weight: bold;
+            font-size: 17px;
+            color: #1e293b;
+        }
+        .main-nav .nav-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .main-nav .nav-link {
+            color: #475569;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 4px;
+        }
+        .main-nav .nav-link:hover, .main-nav .nav-link.active {
+            color: #087bff;
+            background: #eef5ff;
+        }
+        .main-nav .logout-link {
+            color: #dc3545 !important;
+        }
         .card {
             background: white;
             padding: 25px;
@@ -27,17 +65,58 @@
             font-weight: bold;
             color: #168443;
         }
+        .status-danger {
+            color: #c82333;
+        }
         a {
             color: #087bff;
             text-decoration: none;
+        }
+        .sync-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .sync-table th, .sync-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .sync-table th {
+            color: #555;
+            background: #fcfcfc;
         }
     </style>
 </head>
 <body>
 <div class="container">
 
+    <nav class="main-nav">
+        <div class="nav-brand">Student Attendance Platform</div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
+            <a href="{{ url_for('school.school_connections') }}" class="nav-link">School Connections</a>
+            <a href="{{ url_for('student_parent.matching_page') }}" class="nav-link">Student-Parent Matching</a>
+            <a href="{{ url_for('review_matches.view_matches') }}" class="nav-link">Review Matches</a>
+            <a href="{{ url_for('admin_routes.sync_activity_log') }}" class="nav-link">Sync Activity Log</a>
+            <a href="{{ url_for('flask_auth.logout') }}" class="nav-link logout-link">Logout</a>
+        </div>
+    </nav>
+
     <h1>Student Attendance Dashboard</h1>
     <p>Welcome, {{ school.name }}</p>
+
+    <div class="card">
+        <h2>Connected School Information</h2>
+        <p><strong>School Name:</strong> {{ school.name }}</p>
+        <p><strong>API Endpoint:</strong> {{ school.api_endpoint or 'Not configured' }}</p>
+        <p><strong>Connection Status:</strong>
+            <span class="status {% if not school.is_connected %}status-danger{% endif %}">
+                {{ 'Connected' if school.is_connected else 'Disconnected' }}
+            </span>
+        </p>
+    </div>
 
     <div class="card">
         <h2>System Status</h2>
@@ -47,21 +126,58 @@
     <div class="card">
         <h2>Last Sync</h2>
         <p>
-            {{ dashboard_data.last_sync_time or 'Never' }}
+            {{ dashboard_data.last_sync_time.strftime('%Y-%m-%d %H:%M:%S') if dashboard_data.last_sync_time else 'Never' }}
         </p>
     </div>
 
     <div class="card">
         <h2>Next Scheduled Sync</h2>
         <p>
-            {{ dashboard_data.next_sync_time or 'Not scheduled' }}
+            {{ dashboard_data.next_sync_time.strftime('%Y-%m-%d %H:%M:%S') if dashboard_data.next_sync_time else 'Not scheduled' }}
         </p>
     </div>
+
+    {% if dashboard_data.recent_syncs %}
+    <div class="card">
+        <h2>Recent Sync Activity</h2>
+        <table class="sync-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in dashboard_data.recent_syncs %}
+                <tr>
+                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}</td>
+                    <td>
+                        <span class="status {% if log.status != 'success' %}status-danger{% endif %}">
+                            {{ log.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if log.status != 'success' and log.error_message %}
+                            <a href="{{ url_for('admin_routes.sync_error_details', log_id=log.id) }}">View Error</a>
+                        {% else %}
+                            Completed
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 
     <div class="card">
         <h3>Quick Links</h3>
         <p><a href="{{ url_for('school.school_connections') }}">School Connections</a></p>
-        <p><a href="{{ url_for('student_parent.upload_csv') }}">Student Parent Matching</a></p>
+        <p><a href="{{ url_for('student_parent.matching_page') }}">Student Parent Matching</a></p>
+        <p><a href="{{ url_for('review_matches.view_matches') }}">Review Matches</a></p>
+        <p><a href="{{ url_for('admin_routes.sync_activity_log') }}">Sync Activity Log</a></p>
+        <p><a href="{{ url_for('flask_auth.logout') }}">Logout</a></p>
     </div>
 
 </div>

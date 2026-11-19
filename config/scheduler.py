@@ -47,6 +47,23 @@ def stop_scheduler():
 
 
 # ------------------------------------------
+# VALIDATE CRON EXPRESSION
+# ------------------------------------------
+
+def is_valid_cron(cron_expression: str) -> bool:
+    """
+    Validate whether a given cron expression can be parsed by APScheduler.
+    """
+    if not cron_expression or not isinstance(cron_expression, str):
+        return False
+    try:
+        CronTrigger.from_crontab(cron_expression)
+        return True
+    except Exception:
+        return False
+
+
+# ------------------------------------------
 # ADD SYNC JOB
 # ------------------------------------------
 

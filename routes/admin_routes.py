@@ -1,5 +1,5 @@
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session
 
 from config.database import get_db
 
@@ -7,6 +7,8 @@ from models.sync_log import (
     get_sync_logs_for_school,
     get_sync_log_by_id
 )
+from screens.dashboard import get_next_sync_time
+from utils.security import login_required
 
 
 # Create admin routes blueprint.
@@ -16,8 +18,7 @@ admin_routes_bp = Blueprint(
 )
 
 
-# Temporary school ID from your existing project.
-# Later, this can come from the logged-in administrator.
+# Default fallback school ID if not in session
 ADMIN_SCHOOL_ID = 8
 
 
@@ -26,6 +27,7 @@ ADMIN_SCHOOL_ID = 8
 # --------------------------------------------------
 
 @admin_routes_bp.route("/admin/sync-activity-log")
+@login_required
 def sync_activity_log():
     """
     Display recent sync attempts for the administrator's school.
@@ -35,7 +37,7 @@ def sync_activity_log():
     db = next(db_generator)
 
     try:
-        school_id = ADMIN_SCHOOL_ID
+        school_id = session.get("school_id") or ADMIN_SCHOOL_ID
 
         # Fetch the 50 most recent sync logs.
         sync_logs = get_sync_logs_for_school(
@@ -44,10 +46,16 @@ def sync_activity_log():
             limit=50
         )
 
+        next_run = get_next_sync_time(school_id, db)
+        next_sync_str = (
+            next_run.strftime('%Y-%m-%d %H:%M:%S')
+            if next_run else "Not scheduled"
+        )
+
         return render_template(
             "sync_activity_log.html",
             sync_logs=sync_logs,
-            next_sync_time="Not scheduled"
+            next_sync_time=next_sync_str
         )
 
     finally:
@@ -61,6 +69,7 @@ def sync_activity_log():
 @admin_routes_bp.route(
     "/admin/sync-error-details/<int:log_id>"
 )
+@login_required
 def sync_error_details(log_id):
     """
     Display detailed error information for a specific sync.
@@ -70,7 +79,7 @@ def sync_error_details(log_id):
     db = next(db_generator)
 
     try:
-        school_id = ADMIN_SCHOOL_ID
+        school_id = session.get("school_id") or ADMIN_SCHOOL_ID
 
         # Fetch the selected sync log by its ID.
         sync_log = get_sync_log_by_id(

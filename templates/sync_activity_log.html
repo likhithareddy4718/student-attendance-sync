@@ -155,11 +155,63 @@
         .empty-state p {
             font-size: 16px;
         }
+
+        .main-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 18px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .main-nav .nav-brand {
+            font-weight: 700;
+            font-size: 16px;
+            color: #1e293b;
+        }
+        .main-nav .nav-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .main-nav .nav-link {
+            color: #475569;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .main-nav .nav-link:hover, .main-nav .nav-link.active {
+            color: #0288d1;
+            background: #e8f4f8;
+        }
+        .main-nav .logout-link {
+            color: #d32f2f !important;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+
+        <nav class="main-nav">
+            <div class="nav-brand">Student Attendance Platform</div>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('school.school_connections') }}" class="nav-link">School Connections</a>
+                <a href="{{ url_for('student_parent.matching_page') }}" class="nav-link">Student-Parent Matching</a>
+                <a href="{{ url_for('review_matches.view_matches') }}" class="nav-link">Review Matches</a>
+                <a href="{{ url_for('admin_routes.sync_activity_log') }}" class="nav-link active">Sync Activity Log</a>
+                <a href="{{ url_for('flask_auth.logout') }}" class="nav-link logout-link">Logout</a>
+            </div>
+        </nav>
 
         <h1>Sync Activity Log</h1>
 
@@ -182,7 +234,7 @@
                         <div class="sync-info">
 
                             <p class="timestamp">
-                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'Not available' }}
                             </p>
 
                             <p>School ID: {{ log.school_id }}</p>

@@ -19,7 +19,7 @@ def handle_login():
         if "admin_id" in session:
             return redirect("/student-parent/matching")
 
-        return render_template("login.html")
+        return render_template("flask_login.html")
 
     # Get submitted credentials
     email = request.form.get("email", "").strip()
